@@ -25,6 +25,7 @@ export {
   buildRegistry,
   type BuildRegistryOptions,
   type BuildRegistryResult,
+  type RuntimeAdapters,
 } from "./registry.js";
 
 // Validation utilities

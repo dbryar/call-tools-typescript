@@ -8,7 +8,19 @@ export const RequestEnvelopeSchema = z.object({
     .object({
       requestId: z.uuid(),
       sessionId: z.uuid().optional(),
+      parentId: z.uuid().optional(),
       idempotencyKey: z.string().optional(),
+      timeoutMs: z.number().int().positive().optional(),
+      locale: z.string().optional(),
+      traceparent: z.string().optional(),
+    })
+    .optional(),
+  auth: z
+    .object({
+      iss: z.string(),
+      sub: z.string(),
+      credentialType: z.string(),
+      credential: z.string().optional(),
     })
     .optional(),
   media: z

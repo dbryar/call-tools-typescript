@@ -200,6 +200,42 @@ describe("formatResponse", () => {
     );
     expect(result.body.sessionId).toBe("sess-1");
   });
+
+  test("attaches meta when provided", () => {
+    const result = formatResponse(
+      { state: "complete", result: { ok: true } },
+      "req-1",
+      undefined,
+      { serviceStatus: "degraded", region: "us-east-1" }
+    );
+    expect(result.status).toBe(200);
+    expect((result.body as Record<string, unknown>).meta).toEqual({
+      serviceStatus: "degraded",
+      region: "us-east-1",
+    });
+  });
+
+  test("omits meta when not provided", () => {
+    const result = formatResponse(
+      { state: "complete", result: {} },
+      "req-1"
+    );
+    expect((result.body as Record<string, unknown>).meta).toBeUndefined();
+  });
+
+  test("meta does not override envelope fields", () => {
+    const result = formatResponse(
+      { state: "complete", result: { data: 1 } },
+      "req-1",
+      "sess-1",
+      { extra: "info" }
+    );
+    expect(result.body.requestId).toBe("req-1");
+    expect(result.body.sessionId).toBe("sess-1");
+    expect(result.body.state).toBe("complete");
+    expect(result.body.result).toEqual({ data: 1 });
+    expect((result.body as Record<string, unknown>).meta).toEqual({ extra: "info" });
+  });
 });
 
 // ── safeHandlerCall ──────────────────────────────────────────────────────

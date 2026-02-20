@@ -1,13 +1,28 @@
 import { z } from "zod/v4";
-import { readFileSync, readdirSync } from "node:fs";
+import {
+  readFileSync as nodeReadFileSync,
+  readdirSync as nodeReaddirSync,
+} from "node:fs";
 import { join, extname } from "node:path";
-import { createHash } from "node:crypto";
+import { createHash as nodeCreateHash } from "node:crypto";
 import { parseJSDoc } from "./jsdoc.js";
 import type {
   OperationModule,
   RegistryEntry,
   RegistryResponse,
 } from "./types.js";
+
+/** Replaceable runtime dependencies for non-Node environments (e.g. Bun, Deno) */
+export interface RuntimeAdapters {
+  /** Read a file as UTF-8 string. Defaults to node:fs readFileSync. */
+  readFileSync?: (path: string, encoding: "utf-8") => string;
+  /** List filenames in a directory. Defaults to node:fs readdirSync. */
+  readdirSync?: (path: string) => string[];
+  /** Create a hash instance. Defaults to node:crypto createHash. */
+  createHash?: (algorithm: string) => {
+    update(data: string): { digest(encoding: "hex"): string };
+  };
+}
 
 /** Options for building the operations registry */
 export interface BuildRegistryOptions {
@@ -17,6 +32,8 @@ export interface BuildRegistryOptions {
   callVersion?: string;
   /** File extension to scan for (defaults to ".ts") */
   ext?: string;
+  /** Override runtime dependencies for non-Node environments */
+  runtime?: RuntimeAdapters;
 }
 
 /** Result of building the registry, including modules for dispatch */
@@ -48,6 +65,18 @@ export interface BuildRegistryResult {
  *  *  @security items:browse
  *  *\/
  * ```
+ *
+ * For non-Node runtimes, pass `runtime` adapters to replace fs/crypto:
+ * ```
+ * await buildRegistry({
+ *   opsDir: "./operations",
+ *   runtime: {
+ *     readFileSync: Bun.file(path).text,
+ *     readdirSync: (dir) => [...new Bun.Glob("*.ts").scanSync(dir)],
+ *     createHash: (alg) => new Bun.CryptoHasher(alg),
+ *   },
+ * });
+ * ```
  */
 export async function buildRegistry(
   options: BuildRegistryOptions
@@ -56,13 +85,17 @@ export async function buildRegistry(
   const callVersion =
     options.callVersion ?? process.env.CALL_VERSION ?? "2026-02-10";
 
-  const files = readdirSync(opsDir).filter((f) => extname(f) === ext);
+  const readFile = options.runtime?.readFileSync ?? nodeReadFileSync;
+  const readDir = options.runtime?.readdirSync ?? nodeReaddirSync;
+  const hashCreate = options.runtime?.createHash ?? nodeCreateHash;
+
+  const files = readDir(opsDir).filter((f) => extname(f) === ext);
   const entries: RegistryEntry[] = [];
   const modules = new Map<string, OperationModule>();
 
   for (const file of files) {
     const filePath = join(opsDir, file);
-    const sourceText = readFileSync(filePath, "utf-8");
+    const sourceText = readFile(filePath, "utf-8");
     const tags = parseJSDoc(sourceText);
 
     // Skip files that don't declare an @op tag
@@ -107,7 +140,7 @@ export async function buildRegistry(
 
   const registry: RegistryResponse = { callVersion, operations: entries };
   const json = JSON.stringify(registry);
-  const etag = `"${createHash("sha256").update(json).digest("hex")}"`;
+  const etag = `"${hashCreate("sha256").update(json).digest("hex")}"`;
 
   return { registry, modules, json, etag };
 }

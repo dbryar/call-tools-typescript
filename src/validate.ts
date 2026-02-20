@@ -143,7 +143,8 @@ export function checkSunset(
 export function formatResponse(
   opResult: OperationResult,
   requestId: string,
-  sessionId?: string
+  sessionId?: string,
+  meta?: Record<string, unknown>,
 ): DispatchResult {
   const response: ResponseEnvelope = {
     requestId,
@@ -167,7 +168,9 @@ export function formatResponse(
     status = 200;
   }
 
-  return { status, body: response };
+  const body = meta ? { ...response, meta } : response;
+
+  return { status, body };
 }
 
 /**

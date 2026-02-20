@@ -1,5 +1,5 @@
 {
-  "name": "@opencall/tools",
+  "name": "@opencall/ts-tools",
   "version": "0.1.0",
   "description": "OpenCALL tooling — JSDoc operation registry builder, Zod envelope schemas, and runtime payload validation",
   "type": "module",
