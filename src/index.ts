@@ -23,9 +23,12 @@ export { parseJSDoc } from "./jsdoc.js";
 // Registry builder
 export {
   buildRegistry,
+  buildRegistryFromModules,
   type BuildRegistryOptions,
   type BuildRegistryResult,
   type RuntimeAdapters,
+  type ModuleEntry,
+  type ModuleMeta,
 } from "./registry.js";
 
 // Validation utilities
