@@ -1,0 +1,47 @@
+{
+  "name": "@opencall/tools",
+  "version": "0.1.0",
+  "description": "OpenCALL tooling — JSDoc operation registry builder, Zod envelope schemas, and runtime payload validation",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "prepublishOnly": "tsc"
+  },
+  "dependencies": {
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "opencall",
+    "api",
+    "zod",
+    "validation",
+    "operations",
+    "registry"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbryar/call-tools-typescript.git"
+  }
+}
