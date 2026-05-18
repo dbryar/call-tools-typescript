@@ -37,13 +37,13 @@ jobs:
         with:
           bun-version: latest
 
-      # registry-url creates the .npmrc that npm needs to find the OIDC endpoint.
-      # Without it, npm never attempts the OIDC token exchange and returns ENEEDAUTH.
+      # No registry-url: setup-node@v4 injects GITHUB_TOKEN as NODE_AUTH_TOKEN when
+      # registry-url is set, which blocks npm's OIDC Trusted Publishers path even after
+      # unsetting the variable. The Publish step writes its own minimal .npmrc instead.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org"
 
       - name: Determine package
         id: pkg
@@ -76,13 +76,9 @@ jobs:
       - name: Publish
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
-          # setup-node exports GITHUB_TOKEN as NODE_AUTH_TOKEN and writes it into
-          # .npmrc as `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`.
-          # npm treats any configured _authToken — even an empty string — as
-          # "token present" and bypasses the OIDC path entirely.
-          # Stripping the line from .npmrc AND unsetting the env var are both
-          # required: the env: block in GitHub Actions only sets the variable to ""
-          # (still "present"), whereas `unset` makes it truly absent to npm.
-          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG}"
-          unset NODE_AUTH_TOKEN
+          # Write a minimal project-level .npmrc — registry only, no auth token.
+          # npm detects the GitHub Actions OIDC environment via
+          # ACTIONS_ID_TOKEN_REQUEST_URL and authenticates via npm Trusted Publishers
+          # without any stored secret.
+          echo "registry=https://registry.npmjs.org/" > .npmrc
           npm publish --provenance --access public
