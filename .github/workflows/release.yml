@@ -76,9 +76,9 @@ jobs:
       - name: Publish
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
-          # Write a minimal user-level .npmrc — registry only, no auth token.
-          # Project-level .npmrc is silently ignored in workspace packages; writing
-          # to HOME ensures npm reads it. With no _authToken configured, npm falls
-          # through to OIDC Trusted Publishers via ACTIONS_ID_TOKEN_REQUEST_URL.
           echo "registry=https://registry.npmjs.org/" > "${HOME}/.npmrc"
-          npm publish --provenance --access public
+          echo "=== npm version ===" && npm --version
+          echo "=== npm config list ===" && npm config list
+          echo "=== OIDC env ===" && (printenv ACTIONS_ID_TOKEN_REQUEST_URL && echo "OIDC URL: present" || echo "OIDC URL: MISSING")
+          echo "=== HOME npmrc ===" && cat "${HOME}/.npmrc"
+          npm publish --provenance --access public --loglevel verbose
