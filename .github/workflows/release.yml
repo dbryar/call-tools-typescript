@@ -75,9 +75,11 @@ jobs:
 
       - name: Publish
         working-directory: packages/${{ steps.pkg.outputs.name }}
-        env:
-          # setup-node exports GITHUB_TOKEN as NODE_AUTH_TOKEN when registry-url is set.
-          # Clearing it here lets npm fall through to the OIDC token exchange
-          # (npm Trusted Publishers) instead of sending an invalid GitHub credential.
-          NODE_AUTH_TOKEN: ""
-        run: npm publish --provenance --access public
+        run: |
+          # setup-node writes `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` into
+          # the temp .npmrc. npm treats any configured _authToken (even an empty string)
+          # as "token present" and never attempts the OIDC exchange.
+          # Removing the _authToken line entirely is what triggers the Trusted Publishers
+          # OIDC path when no other auth is found.
+          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG}"
+          npm publish --provenance --access public
