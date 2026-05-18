@@ -78,7 +78,7 @@ jobs:
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
           echo "registry=https://registry.npmjs.org/" > "${HOME}/.npmrc"
-          npm --version
-          # Check OIDC env — missing means id-token:write didn't inject the token URL
-          printenv ACTIONS_ID_TOKEN_REQUEST_URL && echo "OIDC URL: present" || echo "OIDC URL: MISSING"
-          npm publish --provenance --access public --loglevel verbose
+          # --no-workspaces: npm 10 routes publish through execWorkspaces when it
+          # detects a workspace root above the CWD; that path skips the OIDC
+          # Trusted Publishers auth check. Force the non-workspace exec path.
+          npm publish --provenance --access public --no-workspaces --loglevel verbose
