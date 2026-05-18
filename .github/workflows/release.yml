@@ -17,17 +17,18 @@ on:
           - server
           - client
 
-# id-token: write lets npm use the GitHub OIDC token for keyless publishing.
-# No NPM_TOKEN secret is needed — npm Trusted Publishers verifies this workflow
-# directly via OIDC, which prevents supply-chain attacks from leaked tokens.
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # id-token: write at job level ensures ACTIONS_ID_TOKEN_REQUEST_URL is set
+    # for this job, enabling npm Trusted Publishers OIDC authentication.
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,8 +78,7 @@ jobs:
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
           echo "registry=https://registry.npmjs.org/" > "${HOME}/.npmrc"
-          echo "=== npm version ===" && npm --version
-          echo "=== npm config list ===" && npm config list
-          echo "=== OIDC env ===" && (printenv ACTIONS_ID_TOKEN_REQUEST_URL && echo "OIDC URL: present" || echo "OIDC URL: MISSING")
-          echo "=== HOME npmrc ===" && cat "${HOME}/.npmrc"
+          npm --version
+          # Check OIDC env — missing means id-token:write didn't inject the token URL
+          printenv ACTIONS_ID_TOKEN_REQUEST_URL && echo "OIDC URL: present" || echo "OIDC URL: MISSING"
           npm publish --provenance --access public --loglevel verbose
