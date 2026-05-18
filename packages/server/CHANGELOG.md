@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — 2026-05-18
+
+### Added
+- `opencall-generate-server-registry` CLI: scans operation source files, reads their JSDoc `@op` annotations, and emits a pre-imported `operations.generated.ts` module for edge/Workers builds that cannot use `buildRegistry()` at runtime.
+- `--check` flag on the same CLI: generates the expected output in memory and exits 1 if the file on disk is missing or out of sync. Designed for CI drift detection — add it as a lint step so edited `@op` annotations that weren't regenerated are caught before merge.
+- JSDoc warning on `ModuleEntry.meta`: clarifies that this field should always be populated by `opencall-generate-server-registry`, not written by hand.
+
+### Docs
+- README restructured with a "Core principle" section and two distinct workflow sections: Node/Bun (runtime `buildRegistry`) vs. edge runtimes (build-time `opencall-generate-server-registry` + `buildRegistryFromModules`).
+- CLI table updated to include both commands.
+
 ## 0.2.2 — 2026-05-01
 
 ### Changed

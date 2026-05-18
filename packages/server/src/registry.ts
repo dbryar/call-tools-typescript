@@ -73,7 +73,18 @@ export interface ModuleMeta {
 export interface ModuleEntry {
   /** The operation module (args, result, handler) */
   module: OperationModule;
-  /** Operation metadata — same tags that buildRegistry() parses from JSDoc */
+  /**
+   * Operation metadata — same fields that buildRegistry() parses from JSDoc.
+   *
+   * @remarks
+   * **This field should always be populated by the `opencall-generate-server-registry`
+   * CLI, not written by hand.** Hand-authoring metadata here decouples it from the
+   * operation's Zod schemas and handler, causing the same drift that the JSDoc-first
+   * approach was designed to prevent.
+   *
+   * Run `opencall-generate-server-registry --ops src/operations --out src/operations.generated.ts`
+   * and import the generated `operationEntries` array.
+   */
   meta: ModuleMeta;
 }
 

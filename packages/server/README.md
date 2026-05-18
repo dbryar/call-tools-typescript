@@ -14,18 +14,9 @@ npm install @opencall/server @opencall/types
 bun add @opencall/server @opencall/types
 ```
 
-## Surface
+## Core principle: operation files are the source of truth
 
-- `buildRegistry`, `buildRegistryFromModules` — produces the `/.well-known/ops` response from operation definitions. Use the file-scan version on Node; use `buildRegistryFromModules` on Cloudflare Workers and other edge runtimes that lack `node:fs`.
-- `parseJSDoc` — extracts operation metadata from JSDoc comments on handler exports.
-- `validateEnvelope`, `validateArgs`, `safeHandlerCall`, `formatResponse`, `checkSunset` — dispatcher building blocks.
-- `generateOpsModule` — codegen that emits a TypeScript registry module from a directory of operation files.
-- `isDbConnectionError` — heuristic detection of DB connection failures, used to surface BACKEND_UNAVAILABLE.
-- All `@opencall/types` exports are re-exported for convenience (no need to `import { RequestEnvelope } from "@opencall/types"` separately).
-
-## Quick example
-
-Each operation file carries a JSDoc block that drives the registry:
+Do not declare operation metadata in a dispatcher or registry file. Operation metadata belongs **beside the handler and schemas** in the operation file itself, as a JSDoc block:
 
 ```ts
 /**
@@ -41,7 +32,11 @@ export const result = z.object({ id: z.string(), name: z.string(), price: z.numb
 export async function handler(input: unknown): Promise<OperationResult> { ... }
 ```
 
-`buildRegistry` scans the directory, reads each JSDoc block, and emits a spec-aligned `/.well-known/ops` response — no separate registry file to maintain:
+The registry is generated from these files — it's never a separate artifact you maintain. Keeping metadata with the code prevents the drift that occurs when registries are hand-authored.
+
+## Node / Bun (runtime discovery)
+
+`buildRegistry` scans the directory, reads each JSDoc block, and emits a spec-aligned `/.well-known/ops` response:
 
 ```ts
 import { buildRegistry, validateEnvelope, validateArgs, safeHandlerCall } from "@opencall/server"
@@ -60,6 +55,67 @@ if (!argsResult.ok) return argsResult.error
 
 const result = await safeHandlerCall(operation.handler, [argsResult.data], requestId)
 ```
+
+## Cloudflare Workers / edge runtimes (build-time generation)
+
+Edge runtimes lack `node:fs`, so scanning operation files at runtime is not possible. Use `opencall-generate-server-registry` to generate a pre-imported module at build time:
+
+```bash
+npx opencall-generate-server-registry --ops src/operations --out src/operations.generated.ts
+```
+
+The generated file (`src/operations.generated.ts`) imports each operation module and embeds the JSDoc-parsed metadata — it is always regenerated from source, never hand-authored:
+
+```ts
+// Auto-generated — DO NOT EDIT
+import type { ModuleEntry } from "@opencall/server";
+import * as ordersGetItem from "./operations/orders-get-item.js";
+// ...
+
+export const operationEntries: ModuleEntry[] = [
+  { module: ordersGetItem, meta: { op: "v1:orders.getItem", execution: "sync", ... } },
+  // ...
+];
+```
+
+Pass this to `buildRegistryFromModules` in your Worker entry point:
+
+```ts
+import { buildRegistryFromModules } from "@opencall/server"
+import { operationEntries } from "./operations.generated.js"
+
+const { modules, json, etag } = buildRegistryFromModules(operationEntries)
+```
+
+Add a `prebuild` script to keep it in sync and a CI check to catch drift:
+
+```json
+{
+  "scripts": {
+    "prebuild": "opencall-generate-server-registry --ops src/operations --out src/operations.generated.ts",
+    "check:registry": "opencall-generate-server-registry --ops src/operations --out src/operations.generated.ts --check"
+  }
+}
+```
+
+`--check` reads operation sources, generates the expected output in memory, and exits 1 if the file on disk differs or is missing — without writing anything. Add it to your CI pipeline to catch generated files that weren't regenerated after an `@op` change.
+
+## Surface
+
+- `buildRegistry` — scan operation files at runtime (Node/Bun). The primary API.
+- `buildRegistryFromModules` — accept pre-imported modules for edge runtimes. Feed it output from `opencall-generate-server-registry`, not hand-authored metadata.
+- `parseJSDoc` — extract operation metadata from JSDoc. Used internally; exposed for tooling.
+- `validateEnvelope`, `validateArgs`, `safeHandlerCall`, `formatResponse`, `checkSunset` — dispatcher building blocks.
+- `isDbConnectionError` — heuristic detection of DB connection failures, returns BACKEND_UNAVAILABLE.
+- All `@opencall/types` exports are re-exported (no need to install `@opencall/types` separately).
+
+## CLIs
+
+| Command | Purpose |
+| ------- | ------- |
+| `opencall-generate-server-registry` | Scan operation JSDoc → emit `operations.generated.ts` for Workers |
+| `opencall-generate-server-registry --check` | Verify `operations.generated.ts` matches sources — exits 1 if out of sync (CI drift detection) |
+| `opencall-generate-ops` | Fetch `/.well-known/ops` → emit typed client call wrappers |
 
 ## OpenCALL spec compatibility
 

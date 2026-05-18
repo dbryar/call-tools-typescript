@@ -1,12 +1,13 @@
 {
   "name": "@opencall/server",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "OpenCALL server tooling — registry builder, JSDoc operation discovery, dispatcher helpers, runtime payload validation",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "opencall-generate-ops": "./dist/cli/generate-ops.js"
+    "opencall-generate-ops": "./dist/cli/generate-ops.js",
+    "opencall-generate-server-registry": "./dist/cli/generate-server-registry.js"
   },
   "exports": {
     ".": {
