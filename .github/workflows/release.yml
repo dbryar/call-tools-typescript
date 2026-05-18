@@ -34,10 +34,14 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Setup Node (for npm provenance)
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          # registry-url creates the .npmrc file that npm publish needs.
+          # NODE_AUTH_TOKEN is set explicitly in the Publish step below —
+          # do NOT rely on setup-node's default, which falls back to GITHUB_TOKEN
+          # (a GitHub API credential, not a valid npm credential).
           registry-url: "https://registry.npmjs.org"
 
       - name: Determine package
@@ -70,4 +74,9 @@ jobs:
 
       - name: Publish
         working-directory: packages/${{ steps.pkg.outputs.name }}
+        env:
+          # NPM_TOKEN must be a valid npm Automation token stored as a repo/org secret.
+          # npm Automation tokens are found at npmjs.com → Access Tokens → Generate New Token.
+          # This overrides setup-node's default, which falls back to GITHUB_TOKEN and fails.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
