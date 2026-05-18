@@ -76,9 +76,9 @@ jobs:
       - name: Publish
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
-          # Write a minimal project-level .npmrc — registry only, no auth token.
-          # npm detects the GitHub Actions OIDC environment via
-          # ACTIONS_ID_TOKEN_REQUEST_URL and authenticates via npm Trusted Publishers
-          # without any stored secret.
-          echo "registry=https://registry.npmjs.org/" > .npmrc
+          # Write a minimal user-level .npmrc — registry only, no auth token.
+          # Project-level .npmrc is silently ignored in workspace packages; writing
+          # to HOME ensures npm reads it. With no _authToken configured, npm falls
+          # through to OIDC Trusted Publishers via ACTIONS_ID_TOKEN_REQUEST_URL.
+          echo "registry=https://registry.npmjs.org/" > "${HOME}/.npmrc"
           npm publish --provenance --access public
