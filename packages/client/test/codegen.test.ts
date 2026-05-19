@@ -12,7 +12,7 @@ const fixture: RegistryResponse = {
   endpoints: ["rpc"],
   operations: [
     {
-      op: "v1:orders.getItem",
+      op: "orders.getItem:v1",
       executionModel: "sync",
       sideEffecting: false,
       argsSchema: { type: "object", properties: { orderId: { type: "string" } }, required: ["orderId"] },
@@ -21,10 +21,10 @@ const fixture: RegistryResponse = {
       sync: { maxMs: 1000, onTimeout: "fail" },
       idempotency: { supported: false, required: false },
       cache: { enabled: false },
-      deprecated: true, sunset: "2026-06-01", replacement: "v2:orders.getItem",
+      deprecated: true, sunset: "2026-06-01", replacement: "orders.getItem:v2",
     },
     {
-      op: "v2:orders.getItem",
+      op: "orders.getItem:v2",
       executionModel: "sync",
       sideEffecting: false,
       argsSchema: { type: "object", properties: { orderId: { type: "string" } }, required: ["orderId"] },
@@ -39,8 +39,8 @@ const fixture: RegistryResponse = {
 
 test("generateClientTypes emits an Operations map keyed by op name", () => {
   const out = generateClientTypes(fixture)
-  expect(out).toContain('"v1:orders.getItem"')
-  expect(out).toContain('"v2:orders.getItem"')
+  expect(out).toContain('"orders.getItem:v1"')
+  expect(out).toContain('"orders.getItem:v2"')
   expect(out).toContain("type Operations")
 })
 
@@ -54,7 +54,7 @@ test("deprecated ops carry @deprecated JSDoc with sunset and replacement", () =>
   const out = generateClientTypes(fixture)
   expect(out).toMatch(/@deprecated/)
   expect(out).toContain("2026-06-01")
-  expect(out).toContain("v2:orders.getItem")
+  expect(out).toContain("orders.getItem:v2")
 })
 
 test("generates a typed call function declaration", () => {
@@ -72,7 +72,7 @@ test("opencall-codegen reads a local JSON registry and writes a .d.ts", async ()
     schemaHash: "sha256:test",
     endpoints: ["rpc"],
     operations: [{
-      op: "v1:foo",
+      op: "foo:v1",
       executionModel: "sync",
       sideEffecting: false,
       argsSchema: { type: "object" }, resultSchema: { type: "object" },
@@ -86,5 +86,5 @@ test("opencall-codegen reads a local JSON registry and writes a .d.ts", async ()
   const r = spawnSync("bun", ["run", cliPath, "--from", inFile, "--out", outFile], { encoding: "utf8" })
   expect(r.status).toBe(0)
   const out = await readFile(outFile, "utf8")
-  expect(out).toContain('"v1:foo"')
+  expect(out).toContain('"foo:v1"')
 })

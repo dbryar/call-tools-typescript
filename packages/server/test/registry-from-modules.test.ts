@@ -23,14 +23,14 @@ const farewellModule: OperationModule = {
     result: { message: `Goodbye, ${(input as { name: string }).name}!` },
   }),
   sunset: "2025-01-01",
-  replacement: "v2:greeting.farewell",
+  replacement: "greeting.farewell:v2",
 };
 
 const entries: ModuleEntry[] = [
   {
     module: greetingModule,
     meta: {
-      op: "v1:greeting.hello",
+      op: "greeting.hello:v1",
       execution: "sync",
       timeout: 3000,
       onTimeout: "fail",
@@ -48,7 +48,7 @@ const entries: ModuleEntry[] = [
   {
     module: farewellModule,
     meta: {
-      op: "v1:greeting.farewell",
+      op: "greeting.farewell:v1",
       execution: "sync",
       timeout: 2000,
       onTimeout: "escalate",
@@ -79,47 +79,47 @@ describe("buildRegistryFromModules", () => {
     expect(modules.size).toBe(2);
 
     const opNames = registry.operations.map((e) => e.op).sort();
-    expect(opNames).toEqual(["v1:greeting.farewell", "v1:greeting.hello"]);
+    expect(opNames).toEqual(["greeting.farewell:v1", "greeting.hello:v1"]);
   });
 
   test("parses execution model from meta", () => {
     const { registry } = buildRegistryFromModules(entries);
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.executionModel).toBe("sync");
   });
 
   test("builds sync policy from meta", () => {
     const { registry } = buildRegistryFromModules(entries);
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.sync).toEqual({ maxMs: 3000, onTimeout: "fail" });
   });
 
   test("parses auth scopes from meta", () => {
     const { registry } = buildRegistryFromModules(entries);
 
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.authScopes).toEqual(["greet:read"]);
 
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.authScopes).toEqual(["greet:read", "greet:write"]);
   });
 
   test("parses flags (sideEffecting, deprecated)", () => {
     const { registry } = buildRegistryFromModules(entries);
 
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.sideEffecting).toBe(false);
     expect(hello?.deprecated).toBeUndefined();
 
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.sideEffecting).toBe(true);
     expect(farewell?.deprecated).toBe(true);
   });
 
   test("builds idempotency, cache, and telemetry blocks", () => {
     const { registry } = buildRegistryFromModules(entries);
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
 
     expect(hello?.cache).toEqual({
       enabled: true,
@@ -148,13 +148,13 @@ describe("buildRegistryFromModules", () => {
 
   test("picks up sunset/replacement from module when not in meta", () => {
     const { registry, modules } = buildRegistryFromModules(entries);
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.sunset).toBe("2025-01-01");
-    expect(farewell?.replacement).toBe("v2:greeting.farewell");
+    expect(farewell?.replacement).toBe("greeting.farewell:v2");
 
-    const mod = modules.get("v1:greeting.farewell");
+    const mod = modules.get("greeting.farewell:v1");
     expect(mod?.sunset).toBe("2025-01-01");
-    expect(mod?.replacement).toBe("v2:greeting.farewell");
+    expect(mod?.replacement).toBe("greeting.farewell:v2");
   });
 
   test("meta sunset/replacement overrides module values", () => {
@@ -162,20 +162,20 @@ describe("buildRegistryFromModules", () => {
       {
         module: farewellModule,
         meta: {
-          op: "v1:greeting.farewell",
+          op: "greeting.farewell:v1",
           sunset: "2026-06-01",
-          replacement: "v3:greeting.farewell",
+          replacement: "greeting.farewell:v3",
         },
       },
     ]);
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.sunset).toBe("2026-06-01");
-    expect(farewell?.replacement).toBe("v3:greeting.farewell");
+    expect(farewell?.replacement).toBe("greeting.farewell:v3");
   });
 
   test("generates JSON Schema for args and result", () => {
     const { registry } = buildRegistryFromModules(entries);
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
 
     expect(hello?.argsSchema).toBeDefined();
     expect(hello?.resultSchema).toBeDefined();
@@ -214,7 +214,7 @@ describe("buildRegistryFromModules", () => {
 
   test("modules contain working handlers", () => {
     const { modules } = buildRegistryFromModules(entries);
-    const hello = modules.get("v1:greeting.hello");
+    const hello = modules.get("greeting.hello:v1");
     expect(hello).toBeDefined();
   });
 
@@ -229,7 +229,7 @@ describe("buildRegistryFromModules", () => {
     const { registry } = buildRegistryFromModules([
       {
         module: greetingModule,
-        meta: { op: "v1:minimal.op" },
+        meta: { op: "minimal.op:v1" },
       },
     ]);
     const op = registry.operations[0];
@@ -257,7 +257,7 @@ describe("buildRegistryFromModules", () => {
       {
         module: greetMod,
         meta: {
-          op: "v1:greeting.hello",
+          op: "greeting.hello:v1",
           execution: "sync",
           timeout: 3000,
           onTimeout: "fail",
@@ -275,14 +275,14 @@ describe("buildRegistryFromModules", () => {
       {
         module: farewellMod,
         meta: {
-          op: "v1:greeting.farewell",
+          op: "greeting.farewell:v1",
           execution: "sync",
           timeout: 2000,
           onTimeout: "escalate",
           security: "greet:read greet:write",
           flags: "sideEffecting deprecated",
           sunset: "2025-01-01",
-          replacement: "v1:greeting.goodbye",
+          replacement: "greeting.goodbye:v1",
           cache: "none",
           idempotency: {
             supported: true,

@@ -26,7 +26,7 @@ const testOp: OperationModule = {
 const sunsetOp: OperationModule = {
   ...testOp,
   sunset: "2024-01-01",
-  replacement: "v2:test.op",
+  replacement: "test.op:v2",
 };
 
 const futureOp: OperationModule = {
@@ -38,10 +38,10 @@ const futureOp: OperationModule = {
 
 describe("validateEnvelope", () => {
   test("succeeds with valid envelope", () => {
-    const result = validateEnvelope({ op: "v1:test.op", args: { x: 1 } });
+    const result = validateEnvelope({ op: "test.op:v1", args: { x: 1 } });
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.envelope.op).toBe("v1:test.op");
+      expect(result.envelope.op).toBe("test.op:v1");
     }
   });
 
@@ -69,7 +69,7 @@ describe("validateEnvelope", () => {
 
   test("fails with invalid ctx.requestId", () => {
     const result = validateEnvelope({
-      op: "v1:test",
+      op: "test:v1",
       ctx: { requestId: "bad" },
     });
     expect(result.ok).toBe(false);
@@ -130,24 +130,24 @@ describe("validateArgs", () => {
 
 describe("checkSunset", () => {
   test("returns undefined for operation with no sunset", () => {
-    expect(checkSunset(testOp, "v1:test", "req-1")).toBeUndefined();
+    expect(checkSunset(testOp, "test:v1", "req-1")).toBeUndefined();
   });
 
   test("returns undefined for future sunset date", () => {
-    expect(checkSunset(futureOp, "v1:test", "req-1")).toBeUndefined();
+    expect(checkSunset(futureOp, "test:v1", "req-1")).toBeUndefined();
   });
 
   test("returns 410 for past sunset date", () => {
-    const result = checkSunset(sunsetOp, "v1:old.op", "req-1");
+    const result = checkSunset(sunsetOp, "old.op:v1", "req-1");
     expect(result).toBeDefined();
     expect(result!.status).toBe(410);
     expect(result!.body.error?.code).toBe("OP_REMOVED");
   });
 
   test("includes replacement in sunset error cause", () => {
-    const result = checkSunset(sunsetOp, "v1:old.op", "req-1");
+    const result = checkSunset(sunsetOp, "old.op:v1", "req-1");
     const cause = result!.body.error?.cause as { replacement: string };
-    expect(cause.replacement).toBe("v2:test.op");
+    expect(cause.replacement).toBe("test.op:v2");
   });
 });
 

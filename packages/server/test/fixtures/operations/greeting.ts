@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 /**
  * Say hello to someone.
  *
- * @op v1:greeting.hello
+ * @op greeting.hello:v1
  * @execution sync
  * @timeout 3000
  * @onTimeout fail

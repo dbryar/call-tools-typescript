@@ -10,7 +10,7 @@ test("call posts to /call with the envelope", async () => {
       { status: 200, headers: { "content-type": "application/json" } },
     )
   }
-  const res = await call("v1:orders.getItem", { orderId: "1" }, { requestId: "abc" }, {
+  const res = await call("orders.getItem:v1", { orderId: "1" }, { requestId: "abc" }, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
   })
@@ -18,7 +18,7 @@ test("call posts to /call with the envelope", async () => {
   expect(calls[0]!.url).toBe("https://api.example.com/call")
   expect(calls[0]!.init.method).toBe("POST")
   const body = JSON.parse(String(calls[0]!.init.body))
-  expect(body.op).toBe("v1:orders.getItem")
+  expect(body.op).toBe("orders.getItem:v1")
   expect(body.args).toEqual({ orderId: "1" })
   expect(body.ctx.requestId).toBe("abc")
   expect(res.state).toBe("complete")
@@ -31,7 +31,7 @@ test("call generates a requestId when not provided", async () => {
     calls.push({ body: JSON.parse(String(init!.body)) })
     return new Response(JSON.stringify({ requestId: "auto", state: "complete" }), { status: 200 })
   }
-  await call("v1:foo.bar", {}, undefined, { endpoint: "https://api.example.com", fetch: fakeFetch })
+  await call("foo.bar:v1", {}, undefined, { endpoint: "https://api.example.com", fetch: fakeFetch })
   const sent = calls[0]!.body as { ctx: { requestId: string } }
   expect(typeof sent.ctx.requestId).toBe("string")
   expect(sent.ctx.requestId.length).toBeGreaterThan(0)
@@ -43,7 +43,7 @@ test("call sends Authorization header when a static token is supplied", async ()
     captured = new Headers(init!.headers)
     return new Response(JSON.stringify({ requestId: "x", state: "complete" }), { status: 200 })
   }
-  await call("v1:foo", {}, undefined, {
+  await call("foo:v1", {}, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
     token: "abc.def.ghi",
@@ -57,7 +57,7 @@ test("call resolves a function token (sync or async)", async () => {
     captured = new Headers(init!.headers).get("authorization") ?? undefined
     return new Response(JSON.stringify({ requestId: "x", state: "complete" }), { status: 200 })
   }
-  await call("v1:foo", {}, undefined, {
+  await call("foo:v1", {}, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
     token: async () => "dyn-token",
@@ -71,7 +71,7 @@ test("call without endpoint throws when no global location is available", async 
   // In Bun's test environment, globalThis.location is typically undefined.
   // The function should throw with a clear message about the missing endpoint.
   await expect(
-    call("v1:foo", {}, undefined, { fetch: fakeFetch }),
+    call("foo:v1", {}, undefined, { fetch: fakeFetch }),
   ).rejects.toThrow(/endpoint/i)
 })
 
@@ -80,7 +80,7 @@ test("parseResponse: true validates the response and rejects malformed payloads"
     // Missing required `requestId` and `state` per ResponseEnvelopeSchema.
     new Response(JSON.stringify({}), { status: 200 })
   await expect(
-    call("v1:foo", {}, undefined, {
+    call("foo:v1", {}, undefined, {
       endpoint: "https://api.example.com",
       fetch: malformed,
       parseResponse: true,

@@ -4,14 +4,14 @@ import { parseJSDoc } from "../src/jsdoc.ts";
 describe("parseJSDoc", () => {
   test("extracts single tags", () => {
     const source = `
-/** @op v1:catalog.list
+/** @op catalog.list:v1
  *  @execution sync
  *  @timeout 5000
  *  @onTimeout fail
  */
 `;
     const tags = parseJSDoc(source);
-    expect(tags.op).toBe("v1:catalog.list");
+    expect(tags.op).toBe("catalog.list:v1");
     expect(tags.execution).toBe("sync");
     expect(tags.timeout).toBe("5000");
     expect(tags.onTimeout).toBe("fail");
@@ -19,7 +19,7 @@ describe("parseJSDoc", () => {
 
   test("accumulates repeated tags with space separator", () => {
     const source = `
-/** @op v1:item.get
+/** @op item.get:v1
  *  @security items:read
  *  @security items:browse
  */
@@ -30,7 +30,7 @@ describe("parseJSDoc", () => {
 
   test("handles flags with multiple values", () => {
     const source = `
-/** @op v1:item.update
+/** @op item.update:v1
  *  @flags sideEffecting idempotencyRequired
  */
 `;
@@ -51,7 +51,7 @@ describe("parseJSDoc", () => {
 
   test("handles all supported OpenCALL tags", () => {
     const source = `
-/** @op v1:report.generate
+/** @op report.generate:v1
  *  @execution async
  *  @timeout 30000
  *  @ttl 3600
@@ -63,11 +63,11 @@ describe("parseJSDoc", () => {
  *  @telemetryAttributes reportId,status
  *  @telemetrySensitive accountNumber
  *  @sunset 2025-06-01
- *  @replacement v2:report.generate
+ *  @replacement report.generate:v2
  */
 `;
     const tags = parseJSDoc(source);
-    expect(tags.op).toBe("v1:report.generate");
+    expect(tags.op).toBe("report.generate:v1");
     expect(tags.execution).toBe("async");
     expect(tags.timeout).toBe("30000");
     expect(tags.ttl).toBe("3600");
@@ -79,16 +79,16 @@ describe("parseJSDoc", () => {
     expect(tags.telemetrySensitive).toBe("accountNumber");
     expect(tags.flags).toContain("deprecated");
     expect(tags.sunset).toBe("2025-06-01");
-    expect(tags.replacement).toBe("v2:report.generate");
+    expect(tags.replacement).toBe("report.generate:v2");
   });
 
   test("only parses the first JSDoc block", () => {
     const source = `
-/** @op v1:first.op */
+/** @op first.op:v1 */
 
-/** @op v1:second.op */
+/** @op second.op:v1 */
 `;
     const tags = parseJSDoc(source);
-    expect(tags.op).toBe("v1:first.op");
+    expect(tags.op).toBe("first.op:v1");
   });
 });

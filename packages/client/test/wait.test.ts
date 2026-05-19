@@ -4,7 +4,7 @@ import { callAndWait } from "../src/wait.js"
 test("callAndWait returns immediately on a complete first response", async () => {
   const fakeFetch: typeof fetch = async () =>
     new Response(JSON.stringify({ requestId: "x", state: "complete", result: 1 }), { status: 200 })
-  const res = await callAndWait("v1:foo", {}, undefined, {
+  const res = await callAndWait("foo:v1", {}, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
   })
@@ -26,7 +26,7 @@ test("callAndWait polls when state is accepted, terminates on complete", async (
     }
     return new Response(JSON.stringify({ requestId: "x", state: "complete", result: 42 }), { status: 200 })
   }
-  const res = await callAndWait("v1:foo", {}, undefined, {
+  const res = await callAndWait("foo:v1", {}, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
     minPollMs: 1,
@@ -41,7 +41,7 @@ test("callAndWait throws on maxWaitMs exceeded", async () => {
     requestId: "x", state: "accepted", location: { uri: "https://api.example.com/ops/x" }, retryAfterMs: 1,
   }), { status: 202 })
   await expect(
-    callAndWait("v1:foo", {}, undefined, {
+    callAndWait("foo:v1", {}, undefined, {
       endpoint: "https://api.example.com",
       fetch: fakeFetch,
       maxWaitMs: 50,
@@ -54,7 +54,7 @@ test("callAndWait returns terminal error state without throwing", async () => {
   const fakeFetch: typeof fetch = async () => new Response(JSON.stringify({
     requestId: "x", state: "error", error: { code: "FOO", message: "nope" },
   }), { status: 200 })
-  const res = await callAndWait("v1:foo", {}, undefined, {
+  const res = await callAndWait("foo:v1", {}, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
   })

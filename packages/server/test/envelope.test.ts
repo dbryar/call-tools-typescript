@@ -8,17 +8,17 @@ import {
 
 describe("RequestEnvelopeSchema", () => {
   test("accepts minimal envelope with just op", () => {
-    const result = RequestEnvelopeSchema.safeParse({ op: "v1:test.op" });
+    const result = RequestEnvelopeSchema.safeParse({ op: "test.op:v1" });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.op).toBe("v1:test.op");
+      expect(result.data.op).toBe("test.op:v1");
       expect(result.data.args).toEqual({});
     }
   });
 
   test("accepts full envelope with all fields", () => {
     const input = {
-      op: "v1:test.op",
+      op: "test.op:v1",
       args: { name: "test", count: 5 },
       ctx: {
         requestId: "550e8400-e29b-41d4-a716-446655440000",
@@ -58,7 +58,7 @@ describe("RequestEnvelopeSchema", () => {
 
   test("accepts auth without credential (transport-carried)", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       auth: {
         iss: "auth.example.com",
         sub: "device:1234",
@@ -73,7 +73,7 @@ describe("RequestEnvelopeSchema", () => {
 
   test("rejects auth missing required iss field", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       auth: { sub: "user:1", credentialType: "bearer" },
     });
     expect(result.success).toBe(false);
@@ -81,7 +81,7 @@ describe("RequestEnvelopeSchema", () => {
 
   test("rejects negative timeoutMs", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       ctx: {
         requestId: "550e8400-e29b-41d4-a716-446655440000",
         timeoutMs: -100,
@@ -92,7 +92,7 @@ describe("RequestEnvelopeSchema", () => {
 
   test("rejects non-integer timeoutMs", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       ctx: {
         requestId: "550e8400-e29b-41d4-a716-446655440000",
         timeoutMs: 2.5,
@@ -103,7 +103,7 @@ describe("RequestEnvelopeSchema", () => {
 
   test("rejects invalid ctx.parentId (not a UUID)", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       ctx: {
         requestId: "550e8400-e29b-41d4-a716-446655440000",
         parentId: "not-a-uuid",
@@ -119,14 +119,14 @@ describe("RequestEnvelopeSchema", () => {
 
   test("rejects invalid ctx.requestId (not a UUID)", () => {
     const result = RequestEnvelopeSchema.safeParse({
-      op: "v1:test.op",
+      op: "test.op:v1",
       ctx: { requestId: "not-a-uuid" },
     });
     expect(result.success).toBe(false);
   });
 
   test("defaults args to empty object when omitted", () => {
-    const result = RequestEnvelopeSchema.safeParse({ op: "v1:test.op" });
+    const result = RequestEnvelopeSchema.safeParse({ op: "test.op:v1" });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.args).toEqual({});
@@ -136,7 +136,7 @@ describe("RequestEnvelopeSchema", () => {
 
 test("RequestEnvelopeSchema accepts ctx without requestId", () => {
   const result = RequestEnvelopeSchema.safeParse({
-    op: "v1:foo",
+    op: "foo:v1",
     args: {},
     ctx: { sessionId: "00000000-0000-0000-0000-000000000000" },
   })
@@ -145,7 +145,7 @@ test("RequestEnvelopeSchema accepts ctx without requestId", () => {
 
 test("RequestEnvelopeSchema accepts empty ctx object", () => {
   const result = RequestEnvelopeSchema.safeParse({
-    op: "v1:foo",
+    op: "foo:v1",
     args: {},
     ctx: {},
   })
@@ -154,7 +154,7 @@ test("RequestEnvelopeSchema accepts empty ctx object", () => {
 
 test("RequestEnvelopeSchema still validates the requestId UUID format when supplied", () => {
   const result = RequestEnvelopeSchema.safeParse({
-    op: "v1:foo",
+    op: "foo:v1",
     args: {},
     ctx: { requestId: "not-a-uuid" },
   })

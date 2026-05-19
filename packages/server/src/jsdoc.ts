@@ -7,7 +7,7 @@
  *
  * Example input:
  * ```
- * /** @op v1:catalog.list
+ * /** @op catalog.list:v1
  *  *  @flags sideEffecting
  *  *  @execution sync
  *  *  @timeout 5000
@@ -18,7 +18,7 @@
  *
  * Returns:
  * ```
- * { op: "v1:catalog.list", flags: "sideEffecting", execution: "sync",
+ * { op: "catalog.list:v1", flags: "sideEffecting", execution: "sync",
  *   timeout: "5000", security: "items:browse items:read" }
  * ```
  */

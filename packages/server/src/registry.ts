@@ -204,7 +204,7 @@ function parseTelemetryPolicy(
   const spanNameToken = telemetryTokens.find((token) => token.startsWith("span="));
   const attributesToken = telemetryTokens.find((token) => token.startsWith("attrs="));
   const sensitiveToken = telemetryTokens.find((token) => token.startsWith("sensitive="));
-  const spanName = spanNameToken?.slice(5) ?? tags["telemetry"] ?? tags["op"]?.split(":")[1];
+  const spanName = spanNameToken?.slice(5) ?? tags["telemetry"] ?? tags["op"]?.split(":")[0];
 
   if (!spanName) return undefined;
 
@@ -356,7 +356,7 @@ function finalizeRegistry(
  *
  * And include a JSDoc block with at minimum an `@op` tag:
  * ```
- * /** @op v1:catalog.list
+ * /** @op catalog.list:v1
  *  *  @execution sync
  *  *  @timeout 5000
  *  *  @security items:browse
@@ -424,7 +424,7 @@ export async function buildRegistry(
  *   {
  *     module: createProfile,
  *     meta: {
- *       op: "v1:identity.createProfile",
+ *       op: "identity.createProfile:v1",
  *       execution: "sync",
  *       timeout: 5000,
  *       security: "identity:write",
@@ -433,7 +433,7 @@ export async function buildRegistry(
  *   {
  *     module: getProfile,
  *     meta: {
- *       op: "v1:identity.getProfile",
+ *       op: "identity.getProfile:v1",
  *       execution: "sync",
  *       timeout: 3000,
  *       security: "identity:read",

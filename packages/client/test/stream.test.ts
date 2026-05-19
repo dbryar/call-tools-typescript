@@ -14,7 +14,7 @@ test("subscribeStream returns the stream descriptor on a streaming response", as
       expiresAt: 1739282400,
     },
   }))
-  const desc = await subscribeStream("v1:device.subscribePosition", { deviceId: "arm-1" }, undefined, {
+  const desc = await subscribeStream("device.subscribePosition:v1", { deviceId: "arm-1" }, undefined, {
     endpoint: "https://api.example.com",
     fetch: fakeFetch,
   })
@@ -28,7 +28,7 @@ test("subscribeStream throws when state is not streaming", async () => {
     requestId: "x", state: "complete", result: { unexpected: true },
   }))
   await expect(
-    subscribeStream("v1:device.subscribePosition", {}, undefined, {
+    subscribeStream("device.subscribePosition:v1", {}, undefined, {
       endpoint: "https://api.example.com",
       fetch: fakeFetch,
     }),
@@ -40,7 +40,7 @@ test("subscribeStream throws when stream object is missing", async () => {
     requestId: "x", state: "streaming",
   }))
   await expect(
-    subscribeStream("v1:device.subscribePosition", {}, undefined, {
+    subscribeStream("device.subscribePosition:v1", {}, undefined, {
       endpoint: "https://api.example.com",
       fetch: fakeFetch,
     }),

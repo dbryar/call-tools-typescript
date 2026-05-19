@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 /**
  * Say goodbye (deprecated, will be removed).
  *
- * @op v1:greeting.farewell
+ * @op greeting.farewell:v1
  * @execution sync
  * @timeout 2000
  * @onTimeout escalate
@@ -16,7 +16,7 @@ import { z } from "zod/v4";
  * @telemetryAttributes name
  * @telemetrySensitive name
  * @sunset 2025-01-01
- * @replacement v1:greeting.goodbye
+ * @replacement greeting.goodbye:v1
  */
 
 export const args = z.object({

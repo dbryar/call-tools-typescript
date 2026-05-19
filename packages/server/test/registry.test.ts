@@ -14,7 +14,7 @@ describe("buildRegistry", () => {
     expect(modules.size).toBe(2);
 
     const opNames = registry.operations.map((e) => e.op).sort();
-    expect(opNames).toEqual(["v1:greeting.farewell", "v1:greeting.hello"]);
+    expect(opNames).toEqual(["greeting.farewell:v1", "greeting.hello:v1"]);
   });
 
   test("skips files without @op tag", async () => {
@@ -27,43 +27,43 @@ describe("buildRegistry", () => {
 
   test("parses execution model from JSDoc", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.executionModel).toBe("sync");
   });
 
   test("builds sync policy from JSDoc", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.sync).toEqual({ maxMs: 3000, onTimeout: "fail" });
   });
 
   test("parses auth scopes from JSDoc", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
 
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.authScopes).toEqual(["greet:read"]);
 
     // farewell has two @security lines
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.authScopes).toEqual(["greet:read", "greet:write"]);
   });
 
   test("parses flags (sideEffecting, deprecated)", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
 
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
     expect(hello?.sideEffecting).toBe(false);
     expect(hello?.deprecated).toBeUndefined();
 
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.sideEffecting).toBe(true);
     expect(farewell?.deprecated).toBe(true);
   });
 
   test("builds idempotency, cache, and telemetry blocks", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
 
     expect(hello?.cache).toEqual({
       enabled: true,
@@ -92,14 +92,14 @@ describe("buildRegistry", () => {
 
   test("parses sunset and replacement", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
-    const farewell = registry.operations.find((e) => e.op === "v1:greeting.farewell");
+    const farewell = registry.operations.find((e) => e.op === "greeting.farewell:v1");
     expect(farewell?.sunset).toBe("2025-01-01");
-    expect(farewell?.replacement).toBe("v1:greeting.goodbye");
+    expect(farewell?.replacement).toBe("greeting.goodbye:v1");
   });
 
   test("generates JSON Schema for args and result", async () => {
     const { registry } = await buildRegistry({ opsDir: fixturesDir });
-    const hello = registry.operations.find((e) => e.op === "v1:greeting.hello");
+    const hello = registry.operations.find((e) => e.op === "greeting.hello:v1");
 
     // Should have a JSON Schema with properties
     expect(hello?.argsSchema).toBeDefined();
@@ -140,7 +140,7 @@ describe("buildRegistry", () => {
 
   test("modules contain working handlers", async () => {
     const { modules } = await buildRegistry({ opsDir: fixturesDir });
-    const hello = modules.get("v1:greeting.hello");
+    const hello = modules.get("greeting.hello:v1");
     expect(hello).toBeDefined();
 
     const result = await hello!.handler({ name: "World" });
@@ -152,9 +152,9 @@ describe("buildRegistry", () => {
 
   test("modules store sunset/replacement metadata", async () => {
     const { modules } = await buildRegistry({ opsDir: fixturesDir });
-    const farewell = modules.get("v1:greeting.farewell");
+    const farewell = modules.get("greeting.farewell:v1");
     expect(farewell?.sunset).toBe("2025-01-01");
-    expect(farewell?.replacement).toBe("v1:greeting.goodbye");
+    expect(farewell?.replacement).toBe("greeting.goodbye:v1");
   });
 
   test("accepts custom runtime adapters", async () => {
