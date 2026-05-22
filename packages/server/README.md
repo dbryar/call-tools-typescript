@@ -20,7 +20,7 @@ Do not declare operation metadata in a dispatcher or registry file. Operation me
 
 ```ts
 /**
- * @op v1:orders.getItem
+ * @op orders.getItem:v1
  * @execution sync
  * @timeout 5000
  * @security orders:read
@@ -73,7 +73,7 @@ import * as ordersGetItem from "./operations/orders-get-item.js";
 // ...
 
 export const operationEntries: ModuleEntry[] = [
-  { module: ordersGetItem, meta: { op: "v1:orders.getItem", execution: "sync", ... } },
+  { module: ordersGetItem, meta: { op: "orders.getItem:v1", execution: "sync", ... } },
   // ...
 ];
 ```

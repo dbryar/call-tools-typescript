@@ -29,7 +29,7 @@ bun add @opencall/client @opencall/types
 import { call } from "@opencall/client"
 
 const res = await call(
-  "v1:orders.getItem",
+  "orders.getItem:v1",
   { orderId: "456", itemId: "789" },
   undefined,
   { endpoint: "https://api.example.com", token: () => getToken() },
