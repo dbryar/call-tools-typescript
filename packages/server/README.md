@@ -56,6 +56,24 @@ if (!argsResult.ok) return argsResult.error
 const result = await safeHandlerCall(operation.handler, [argsResult.data], requestId)
 ```
 
+Handlers can throw OpenCALL-aware errors created with `defineError()`. `safeHandlerCall`
+uses the error class metadata to choose the response status and error code:
+
+```ts
+import { defineError, type OperationResult } from "@opencall/server"
+
+export const ItemNotFoundError = defineError({
+  code: "ITEM_NOT_FOUND",
+  httpStatus: 200,
+  message: "Item not found",
+  retryable: false,
+})
+
+export async function handler(input: unknown): Promise<OperationResult> {
+  throw new ItemNotFoundError({ input })
+}
+```
+
 ## Cloudflare Workers / edge runtimes (build-time generation)
 
 Edge runtimes lack `node:fs`, so scanning operation files at runtime is not possible. Use `opencall-generate-server-registry` to generate a pre-imported module at build time:

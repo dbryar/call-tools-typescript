@@ -7,10 +7,27 @@ export {
 } from "./envelope.js"
 
 export {
+  AuthRequiredError,
   DomainError,
   BackendUnavailableError,
+  ForbiddenError,
+  InternalError,
+  InvalidEnvelopeError,
+  OpNotFoundError,
+  OpRemovedError,
+  SchemaValidationError,
+  defineError,
   domainError,
+  isOpenCallError,
   protocolError,
+} from "./errors.js"
+
+export type {
+  ErrorCategory,
+  OpenCallErrorConstructor,
+  OpenCallErrorInstance,
+  OpenCallErrorMeta,
+  SerializedOpenCallError,
 } from "./errors.js"
 
 export type {
