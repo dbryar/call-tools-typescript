@@ -21,7 +21,10 @@ bun add @opencall/types
 - `ResponseEnvelope`, `ResponseState` — canonical response envelope shape.
 - `OperationModule`, `OperationResult` — the contract that operation handlers implement.
 - `RegistryEntry`, `RegistryResponse` — the shape served at `/.well-known/ops`.
-- `DomainError`, `BackendUnavailableError` — throwable error classes.
+- `ErrorEntry`, `ErrorsResponse` — the shape served at `/.well-known/errors`.
+- `defineError`, `isOpenCallError` — create and detect OpenCALL-aware error classes with static metadata for dispatch, logging, and catalog generation.
+- `InvalidEnvelopeError`, `SchemaValidationError`, `OpNotFoundError`, `OpRemovedError`, `AuthRequiredError`, `ForbiddenError`, `BackendUnavailableError`, `InternalError` — built-in protocol and service error classes.
+- `DomainError` — deprecated throwable domain error wrapper; prefer `defineError()`.
 - `domainError`, `protocolError` — response-shape constructors.
 
 ## Quick example
@@ -35,6 +38,23 @@ if (!parse.success) {
 }
 const envelope: RequestEnvelope = parse.data
 ```
+
+## Defining Errors
+
+```ts
+import { defineError } from "@opencall/types"
+
+export const ItemNotFoundError = defineError({
+  code: "ITEM_NOT_FOUND",
+  httpStatus: 200,
+  message: "Item not found",
+  retryable: false,
+})
+
+throw new ItemNotFoundError({ itemId: "123" })
+```
+
+Errors created by `defineError()` serialize OpenCALL-specific fields through `toJSON()` and include the stack through `toLog()`.
 
 ## OpenCALL spec compatibility
 

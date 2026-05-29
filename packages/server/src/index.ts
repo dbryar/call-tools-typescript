@@ -6,10 +6,26 @@ export {
   type RequestEnvelope,
   type ResponseState,
   type ResponseEnvelope,
+  AuthRequiredError,
   DomainError,
   BackendUnavailableError,
+  ForbiddenError,
+  InternalError,
+  InvalidEnvelopeError,
+  OpNotFoundError,
+  OpRemovedError,
+  SchemaValidationError,
+  defineError,
   domainError,
+  isOpenCallError,
   protocolError,
+  type ErrorCategory,
+  type ErrorEntry,
+  type ErrorsResponse,
+  type OpenCallErrorConstructor,
+  type OpenCallErrorInstance,
+  type OpenCallErrorMeta,
+  type SerializedOpenCallError,
   type OperationResult,
   type OperationModule,
   type RegistryEntry,
@@ -35,6 +51,11 @@ export {
   generateOpsModule,
   type GenerateOpsOptions,
 } from "./codegen.js"
+
+export {
+  buildErrorCatalog,
+  buildErrorCatalogFromModules,
+} from "./error-catalog.js"
 
 export {
   validateEnvelope,

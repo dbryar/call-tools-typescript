@@ -56,6 +56,24 @@ if (!argsResult.ok) return argsResult.error
 const result = await safeHandlerCall(operation.handler, [argsResult.data], requestId)
 ```
 
+Handlers can throw OpenCALL-aware errors created with `defineError()`. `safeHandlerCall`
+uses the error class metadata to choose the response status and error code:
+
+```ts
+import { defineError, type OperationResult } from "@opencall/server"
+
+export const ItemNotFoundError = defineError({
+  code: "ITEM_NOT_FOUND",
+  httpStatus: 200,
+  message: "Item not found",
+  retryable: false,
+})
+
+export async function handler(input: unknown): Promise<OperationResult> {
+  throw new ItemNotFoundError({ input })
+}
+```
+
 ## Cloudflare Workers / edge runtimes (build-time generation)
 
 Edge runtimes lack `node:fs`, so scanning operation files at runtime is not possible. Use `opencall-generate-server-registry` to generate a pre-imported module at build time:
@@ -100,10 +118,26 @@ Add a `prebuild` script to keep it in sync and a CI check to catch drift:
 
 `--check` reads operation sources, generates the expected output in memory, and exits 1 if the file on disk differs or is missing — without writing anything. Add it to your CI pipeline to catch generated files that weren't regenerated after an `@op` change.
 
+Generate a static `/.well-known/errors` JSON catalog from the same operation modules:
+
+```bash
+npx opencall-generate-error-catalog --ops "dist/operations/*.js" --out public/.well-known/errors
+```
+
+At runtime, pre-imported operation modules can also be passed directly to `buildErrorCatalogFromModules()`:
+
+```ts
+import { buildErrorCatalogFromModules } from "@opencall/server"
+import * as ordersGetItem from "./operations/orders-get-item.js"
+
+const errors = buildErrorCatalogFromModules([ordersGetItem])
+```
+
 ## Surface
 
 - `buildRegistry` — scan operation files at runtime (Node/Bun). The primary API.
 - `buildRegistryFromModules` — accept pre-imported modules for edge runtimes. Feed it output from `opencall-generate-server-registry`, not hand-authored metadata.
+- `buildErrorCatalog`, `buildErrorCatalogFromModules` — serialize OpenCALL error class metadata for `/.well-known/errors`.
 - `parseJSDoc` — extract operation metadata from JSDoc. Used internally; exposed for tooling.
 - `validateEnvelope`, `validateArgs`, `safeHandlerCall`, `formatResponse`, `checkSunset` — dispatcher building blocks.
 - `isDbConnectionError` — heuristic detection of DB connection failures, returns BACKEND_UNAVAILABLE.
@@ -113,6 +147,8 @@ Add a `prebuild` script to keep it in sync and a CI check to catch drift:
 
 | Command | Purpose |
 | ------- | ------- |
+| `opencall-generate-error-catalog` | Import operation modules → emit `/.well-known/errors` JSON |
+| `opencall-generate-error-catalog --check` | Verify generated error catalog JSON is in sync |
 | `opencall-generate-server-registry` | Scan operation JSDoc → emit `operations.generated.ts` for Workers |
 | `opencall-generate-server-registry --check` | Verify `operations.generated.ts` matches sources — exits 1 if out of sync (CI drift detection) |
 | `opencall-generate-ops` | Fetch `/.well-known/ops` → emit typed client call wrappers |

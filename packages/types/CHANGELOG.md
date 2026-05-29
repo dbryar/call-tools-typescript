@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `ErrorEntry` and `ErrorsResponse` types for the `/.well-known/errors` response shape.
+- Optional `OpenCallErrorConstructor.__catalog_exclude` marker for legacy wrappers that should not appear in generated error catalogs.
+
 ## 0.2.1 — 2026-05-29
 
 ### Fixed

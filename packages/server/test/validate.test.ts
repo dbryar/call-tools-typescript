@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 import {
   DomainError,
   BackendUnavailableError,
+  defineError,
   validateEnvelope,
   validateArgs,
   checkSunset,
@@ -297,6 +298,29 @@ describe("safeHandlerCall", () => {
     expect(result.body.error?.code).toBe("ITEM_NOT_FOUND");
   });
 
+  test("catches defined OpenCALL errors using their httpStatus", async () => {
+    const ItemConflictError = defineError({
+      code: "ITEM_CONFLICT",
+      httpStatus: 409,
+      message: "Item conflict",
+      retryable: false,
+    });
+    const handler = async () => {
+      throw new ItemConflictError({ itemId: "item-1" });
+    };
+    const result = await safeHandlerCall(handler, [], "req-1", "session-1");
+
+    expect(result.status).toBe(409);
+    expect(result.body.requestId).toBe("req-1");
+    expect(result.body.sessionId).toBe("session-1");
+    expect(result.body.state).toBe("error");
+    expect(result.body.error).toEqual({
+      code: "ITEM_CONFLICT",
+      message: "Item conflict",
+      cause: { itemId: "item-1" },
+    });
+  });
+
   test("catches unexpected errors and returns 500", async () => {
     const handler = async () => {
       throw new Error("kaboom");
@@ -327,13 +351,13 @@ describe("safeHandlerCall", () => {
 
   test("safeHandlerCall converts BackendUnavailableError into HTTP 503", async () => {
     const handler = async () => {
-      throw new BackendUnavailableError("oauth-server", "down for maintenance")
+      throw new BackendUnavailableError({ service: "oauth-server" })
     }
     const res = await safeHandlerCall(handler, [], "00000000-0000-0000-0000-000000000000")
     expect(res.status).toBe(503)
     expect(res.body.state).toBe("error")
     expect(res.body.error?.code).toBe("BACKEND_UNAVAILABLE")
-    expect(res.body.error?.message).toBe("down for maintenance")
+    expect(res.body.error?.message).toBe("A backend dependency is unavailable.")
     expect((res.body.error?.cause as { service: string }).service).toBe("oauth-server")
     expect(res.body.retryAfterMs).toBe(60_000)
   })

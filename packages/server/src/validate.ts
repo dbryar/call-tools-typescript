@@ -1,6 +1,6 @@
 import type { z } from "zod/v4";
 import { RequestEnvelopeSchema, type ResponseEnvelope } from "@opencall/types";
-import { protocolError, DomainError, domainError, BackendUnavailableError } from "@opencall/types";
+import { domainError, isOpenCallError, protocolError } from "@opencall/types";
 import type { OperationModule, OperationResult } from "@opencall/types";
 import { isDbConnectionError } from "./db-errors.js";
 
@@ -190,7 +190,7 @@ export function formatResponse(
 }
 
 /**
- * Wrap a handler invocation, catching DomainErrors and unexpected errors
+ * Wrap a handler invocation, catching OpenCALL errors and unexpected errors
  * and converting them to proper DispatchResult responses.
  */
 export async function safeHandlerCall(
@@ -203,28 +203,28 @@ export async function safeHandlerCall(
     const opResult = await handler(...handlerArgs);
     return formatResponse(opResult, requestId, sessionId);
   } catch (err) {
-    if (err instanceof DomainError) {
+    if (isOpenCallError(err)) {
+      const legacyCause =
+        err.cause === undefined &&
+        "service" in err &&
+        typeof err.service === "string"
+          ? { service: err.service, retriable: err.retryable }
+          : undefined;
+      const cause = err.cause ?? legacyCause;
       return {
-        status: 200,
-        body: domainError(requestId, err.code, err.message, err.cause),
-      };
-    }
-
-    if (err instanceof BackendUnavailableError) {
-      return {
-        status: 503,
+        status: err.httpStatus,
         body: {
           requestId,
           ...(sessionId !== undefined && { sessionId }),
           state: "error",
           error: {
-            code: "BACKEND_UNAVAILABLE",
+            code: err.code,
             message: err.message,
-            cause: { service: err.service, retriable: err.retriable },
+            ...(cause !== undefined && { cause }),
           },
-          retryAfterMs: 60_000,
+          ...(err.httpStatus === 503 && { retryAfterMs: 60_000 }),
         },
-      }
+      };
     }
 
     if (isDbConnectionError(err)) {

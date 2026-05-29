@@ -6,6 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
+    "opencall-generate-error-catalog": "./dist/cli/generate-error-catalog.js",
     "opencall-generate-ops": "./dist/cli/generate-ops.js",
     "opencall-generate-server-registry": "./dist/cli/generate-server-registry.js"
   },
