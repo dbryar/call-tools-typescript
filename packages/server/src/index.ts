@@ -20,6 +20,8 @@ export {
   isOpenCallError,
   protocolError,
   type ErrorCategory,
+  type ErrorEntry,
+  type ErrorsResponse,
   type OpenCallErrorConstructor,
   type OpenCallErrorInstance,
   type OpenCallErrorMeta,
@@ -49,6 +51,11 @@ export {
   generateOpsModule,
   type GenerateOpsOptions,
 } from "./codegen.js"
+
+export {
+  buildErrorCatalog,
+  buildErrorCatalogFromModules,
+} from "./error-catalog.js"
 
 export {
   validateEnvelope,

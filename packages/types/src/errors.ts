@@ -21,6 +21,7 @@ export interface SerializedOpenCallError {
 
 export interface OpenCallErrorConstructor {
   readonly __opencall: true;
+  readonly __catalog_exclude?: true;
   readonly code: string;
   readonly httpStatus: number;
   readonly defaultMessage: string;
@@ -36,6 +37,18 @@ export interface OpenCallErrorInstance extends Error {
   readonly category: ErrorCategory;
   toJSON(): SerializedOpenCallError;
   toLog(): SerializedOpenCallError & { stack?: string };
+}
+
+export interface ErrorEntry {
+  code: string;
+  httpStatus: number;
+  message: string;
+  retryable: boolean;
+  category: ErrorCategory;
+}
+
+export interface ErrorsResponse {
+  errors: ErrorEntry[];
 }
 
 function serializeCause(cause: unknown): unknown {
@@ -180,6 +193,7 @@ const BackendUnavailableErrorBase = defineError({
 /** @deprecated Use defineError({ code, httpStatus, message, retryable }) for domain-specific errors. */
 export class DomainError extends Error implements OpenCallErrorInstance {
   static readonly __opencall = true as const;
+  static readonly __catalog_exclude = true as const;
   static readonly code = "DOMAIN_ERROR";
   static readonly httpStatus = 200;
   static readonly defaultMessage = "Domain error";

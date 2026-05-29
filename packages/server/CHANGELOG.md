@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `buildErrorCatalog()` and `buildErrorCatalogFromModules()` for serializing OpenCALL error class metadata into the `/.well-known/errors` response shape.
+- `opencall-generate-error-catalog` CLI for build-time error catalog JSON generation and `--check` drift detection.
+
 ## 0.4.1 — 2026-05-29
 
 ### Fixed

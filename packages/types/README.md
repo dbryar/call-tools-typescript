@@ -21,7 +21,8 @@ bun add @opencall/types
 - `ResponseEnvelope`, `ResponseState` — canonical response envelope shape.
 - `OperationModule`, `OperationResult` — the contract that operation handlers implement.
 - `RegistryEntry`, `RegistryResponse` — the shape served at `/.well-known/ops`.
-- `defineError`, `isOpenCallError` — create and detect OpenCALL-aware error classes with static metadata for dispatch, logging, and future catalog generation.
+- `ErrorEntry`, `ErrorsResponse` — the shape served at `/.well-known/errors`.
+- `defineError`, `isOpenCallError` — create and detect OpenCALL-aware error classes with static metadata for dispatch, logging, and catalog generation.
 - `InvalidEnvelopeError`, `SchemaValidationError`, `OpNotFoundError`, `OpRemovedError`, `AuthRequiredError`, `ForbiddenError`, `BackendUnavailableError`, `InternalError` — built-in protocol and service error classes.
 - `DomainError` — deprecated throwable domain error wrapper; prefer `defineError()`.
 - `domainError`, `protocolError` — response-shape constructors.

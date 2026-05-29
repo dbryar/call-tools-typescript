@@ -24,6 +24,8 @@ export {
 
 export type {
   ErrorCategory,
+  ErrorEntry,
+  ErrorsResponse,
   OpenCallErrorConstructor,
   OpenCallErrorInstance,
   OpenCallErrorMeta,
