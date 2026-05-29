@@ -1,6 +1,6 @@
 {
   "name": "@opencall/types",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "OpenCALL canonical Zod schemas and types for the request/response envelope, registry, and error contract",
   "type": "module",
   "main": "dist/index.js",
@@ -23,11 +23,12 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
-  "dependencies": {
+  "peerDependencies": {
+    "typescript": "^5",
     "zod": "^4.4.3"
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "devDependencies": {
+    "zod": "^4.4.3"
   },
   "keywords": [
     "opencall",

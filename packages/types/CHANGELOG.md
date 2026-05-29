@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — 2026-05-29
+
+### Fixed
+- Moved Zod from a normal dependency to a peer dependency so consumers and OpenCALL packages resolve the same Zod type identity.
+
 ## 0.2.0 — 2026-05-29
 
 ### Changed
