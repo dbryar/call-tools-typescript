@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 — 2026-05-29
+
+### Fixed
+- Moved Zod from a normal dependency to a peer dependency so operation schemas and OpenCALL package declarations use the consumer's Zod type identity.
+- Bumped `@opencall/types` dependency to `^0.2.1`.
+
 ## 0.4.0 — 2026-05-29
 
 ### Changed

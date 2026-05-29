@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-05-29
+
+### Fixed
+- Bumped `@opencall/types` dependency to `^0.2.1` to pick up the Zod peer-dependency fix.
+- Removed the unused direct Zod dependency.
+
 ## 0.2.0 — 2026-05-29
 
 ### Changed
