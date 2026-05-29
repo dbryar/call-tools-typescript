@@ -1,6 +1,6 @@
 {
   "name": "@opencall/server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "OpenCALL server tooling — registry builder, JSDoc operation discovery, dispatcher helpers, runtime payload validation",
   "type": "module",
   "main": "dist/index.js",
@@ -28,8 +28,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@opencall/types": "^0.1.3",
-    "zod": "^3.25.0"
+    "@opencall/types": "^0.2.0",
+    "zod": "^4.4.3"
   },
   "peerDependencies": {
     "typescript": "^5"

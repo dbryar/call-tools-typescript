@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 — 2026-05-29
+
+### Changed
+- Upgraded the package's Zod dependency to v4.
+- Bumped `@opencall/types` dependency to `^0.2.0`.
+
 ## 0.3.0 — 2026-05-18
 
 ### Added
